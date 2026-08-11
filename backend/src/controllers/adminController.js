@@ -1,7 +1,9 @@
+import mongoose from 'mongoose';
 import User from '../models/User.js';
 import Product from '../models/Product.js';
 import Order from '../models/Order.js';
 import Store from '../models/Store.js';
+import Category from '../models/Category.js';
 
 export const getOverview = async (req, res, next) => {
   try {
@@ -22,16 +24,21 @@ export const getProducts = async (req, res, next) => { try { res.json(await Prod
 export const createProduct = async (req, res, next) => {
   try {
     const { name, description, price, oldPrice, category, stock, images, image } = req.body;
+    let categoryId = category;
+    if (category && !mongoose.Types.ObjectId.isValid(category)) {
+      const cat = await Category.findOne({ slug: category });
+      categoryId = cat ? cat._id : null;
+    }
     const p = new Product({
       name,
       description,
       price,
       oldPrice,
-      category: category || null,
+      category: categoryId,
       stock: stock || 10,
       images: images || (image ? [{ url: image }] : []),
       seller: req.user._id,
-      status: 'approved'
+      status: 'active'
     });
     await p.save();
     res.status(201).json(p);
@@ -39,7 +46,12 @@ export const createProduct = async (req, res, next) => {
 };
 export const updateProduct = async (req, res, next) => {
   try {
-    const p = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const updateData = { ...req.body };
+    if (updateData.category && !mongoose.Types.ObjectId.isValid(updateData.category)) {
+      const cat = await Category.findOne({ slug: updateData.category });
+      updateData.category = cat ? cat._id : null;
+    }
+    const p = await Product.findByIdAndUpdate(req.params.id, updateData, { new: true });
     p ? res.json(p) : res.status(404).json({ message: 'Not found' });
   } catch (e) { next(e); }
 };

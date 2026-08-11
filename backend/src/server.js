@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 dotenv.config();
 import app from "./app.js";
 import connectDB from "./config/db.js";
+import { seedCategories } from "./utils/seeder.js";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import { setupSocket } from "./sockets/index.js";
@@ -15,7 +16,8 @@ app.set("io", io);
 setupSocket(io);
 
 connectDB()
-  .then(() => {
+  .then(async () => {
+    await seedCategories();
     server.listen(PORT, () =>
       console.log(`[SERVER] Lumo Market API on port ${PORT}`),
     );

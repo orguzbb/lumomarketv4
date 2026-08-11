@@ -20,7 +20,8 @@ import {
   TbBrandInstagram,
   TbBrandFacebook,
   TbBrandYoutube,
-  TbMail
+  TbMail,
+  TbMapPin
 } from "react-icons/tb";
 
 const AdminDashboard = () => {
@@ -28,6 +29,12 @@ const AdminDashboard = () => {
 
   // Stats State
   const [stats, setStats] = useState({ users: 0, sellers: 0, products: 0, orders: 0 });
+
+  // Registered Users list
+  const [usersList, setUsersList] = useState([]);
+
+  // Categories list
+  const [categories, setCategories] = useState([]);
 
   // Products CRUD State
   const [products, setProducts] = useState([]);
@@ -39,7 +46,7 @@ const AdminDashboard = () => {
     price: "",
     oldPrice: "",
     stock: 10,
-    category: "clothing",
+    category: "",
     image: "",
     description: ""
   });
@@ -65,7 +72,8 @@ const AdminDashboard = () => {
     instagram: "https://instagram.com/lumomarket",
     facebook: "https://facebook.com/lumomarket",
     youtube: "https://youtube.com/lumomarket",
-    email: "support@lumomarket.uz"
+    email: "support@lumomarket.uz",
+    address: "Toshkent sh., Yunusobod t., Amir Temur shoh ko'chasi 10"
   });
 
   useEffect(() => {
@@ -73,6 +81,8 @@ const AdminDashboard = () => {
     fetchProducts();
     fetchBanners();
     fetchSettings();
+    fetchCategories();
+    fetchUsers();
   }, []);
 
   const fetchStats = async () => {
@@ -111,6 +121,24 @@ const AdminDashboard = () => {
     }
   };
 
+  const fetchCategories = async () => {
+    try {
+      const { data } = await api.get("/categories");
+      if (data) setCategories(data);
+    } catch (e) {
+      console.warn("Fetch categories error", e);
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const { data } = await api.get("/admin/users");
+      if (data) setUsersList(data);
+    } catch (e) {
+      console.warn("Fetch users error", e);
+    }
+  };
+
   // Product CRUD Handlers
   const handleOpenProductModal = (prod = null) => {
     if (prod) {
@@ -120,7 +148,7 @@ const AdminDashboard = () => {
         price: prod.price || "",
         oldPrice: prod.oldPrice || "",
         stock: prod.stock || 10,
-        category: prod.category?._id || prod.category || "clothing",
+        category: prod.category?._id || prod.category || "",
         image: prod.images?.[0]?.url || prod.image || "",
         description: prod.description || ""
       });
@@ -131,7 +159,7 @@ const AdminDashboard = () => {
         price: "",
         oldPrice: "",
         stock: 10,
-        category: "clothing",
+        category: "",
         image: "",
         description: ""
       });
@@ -334,6 +362,63 @@ const AdminDashboard = () => {
               </div>
             </div>
           </div>
+
+          {/* Tizim Foydalanuvchilari Ro'yxati */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mt-6">
+            <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+              <div>
+                <h3 className="font-extrabold text-gray-900 text-sm">Tizim Foydalanuvchilari</h3>
+                <p className="text-[11px] text-gray-500">Ro'yxatdan o'tgan mijozlar, sotuvchilar va adminlar</p>
+              </div>
+              <span className="text-xs bg-purple-50 text-brand font-bold px-3 py-1 rounded-xl">
+                Jami: {usersList.length} ta
+              </span>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs text-gray-700">
+                <thead className="bg-gray-50 border-b border-gray-100 text-gray-500 font-bold uppercase">
+                  <tr>
+                    <th className="p-4">Foydalanuvchi</th>
+                    <th className="p-4">Email</th>
+                    <th className="p-4">Rol</th>
+                    <th className="p-4">Ro'yxatdan o'tgan sana</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 bg-white">
+                  {usersList.length > 0 ? (
+                    usersList.map((u) => (
+                      <tr key={u._id} className="hover:bg-purple-50/20 transition-colors">
+                        <td className="p-4 font-bold text-gray-900">{u.fullname}</td>
+                        <td className="p-4 text-gray-600">{u.email}</td>
+                        <td className="p-4">
+                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                            u.role === 'admin' ? 'bg-red-50 text-red-600 border border-red-100' :
+                            u.role === 'seller' ? 'bg-purple-50 text-brand border border-purple-100' :
+                            'bg-blue-50 text-blue-600 border border-blue-100'
+                          }`}>
+                            {u.role === 'admin' ? 'Admin' : u.role === 'seller' ? 'Sotuvchi' : 'Mijoz'}
+                          </span>
+                        </td>
+                        <td className="p-4 text-gray-400">
+                          {u.createdAt ? new Date(u.createdAt).toLocaleDateString("uz-UZ", {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          }) : "-"}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="4" className="p-8 text-center text-gray-400 font-medium">
+                        Foydalanuvchilar topilmadi
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       )}
 
@@ -509,6 +594,19 @@ const AdminDashboard = () => {
 
             <div>
               <label className="block text-xs font-bold text-gray-700 mb-1 flex items-center gap-1">
+                <TbMapPin className="w-4 h-4 text-brand" /> Sayt manzili (Fizik manzil)
+              </label>
+              <input
+                type="text"
+                value={settingsForm.address || ""}
+                onChange={(e) => setSettingsForm({ ...settingsForm, address: e.target.value })}
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-xs outline-none focus:border-brand"
+                placeholder="Toshkent sh., Yunusobod t., Amir Temur shoh ko'chasi 10"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-1 flex items-center gap-1">
                 <TbBrandTelegram className="w-4 h-4 text-blue-500" /> Telegram Havola
               </label>
               <input
@@ -588,8 +686,49 @@ const AdminDashboard = () => {
               </div>
             </div>
             <div>
-              <label className="block text-xs font-bold text-gray-700 mb-1">Rasm URL Manzili</label>
-              <input type="text" required value={productForm.image} onChange={(e) => setProductForm({ ...productForm, image: e.target.value })} className="w-full border rounded-xl p-2.5 text-xs outline-none focus:border-brand" placeholder="https://..." />
+              <label className="block text-xs font-bold text-gray-700 mb-1">Kategoriya</label>
+              <select required value={productForm.category} onChange={(e) => setProductForm({ ...productForm, category: e.target.value })} className="w-full border rounded-xl p-2.5 text-xs outline-none focus:border-brand bg-white">
+                <option value="">Kategoriyani tanlang...</option>
+                {categories.map((cat) => (
+                  <option key={cat._id} value={cat._id}>{cat.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-1">Mahsulot Rasmi (Kompyuterdan yuklash)</label>
+              <div className="space-y-2">
+                <input
+                  type="file"
+                  accept="image/png, image/jpeg, image/jpg, image/webp"
+                  onChange={async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    const formData = new FormData();
+                    formData.append("image", file);
+                    try {
+                      toast.loading("Rasm yuklanmoqda...", { id: "upload" });
+                      const { data } = await api.post("/admin/upload", formData, {
+                        headers: { "Content-Type": "multipart/form-data" }
+                      });
+                      setProductForm({ ...productForm, image: data.url });
+                      toast.success("Rasm yuklandi!", { id: "upload" });
+                    } catch (err) {
+                      toast.error("Rasm yuklashda xatolik yuz berdi", { id: "upload" });
+                    }
+                  }}
+                  className="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-purple-50 file:text-brand hover:file:bg-purple-100"
+                />
+                {productForm.image && (
+                  <div className="flex items-center gap-2">
+                    <img src={productForm.image} alt="Preview" className="w-16 h-16 object-cover rounded-xl border border-gray-100 shadow-sm" />
+                    <span className="text-[10px] text-gray-500 truncate max-w-[200px]">{productForm.image}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-1">Mahsulot Tavsifi (Description)</label>
+              <textarea required rows="3" value={productForm.description} onChange={(e) => setProductForm({ ...productForm, description: e.target.value })} className="w-full border rounded-xl p-2.5 text-xs outline-none focus:border-brand" placeholder="Mahsulot haqida batafsil..." />
             </div>
             <button type="submit" className="w-full bg-brand text-white font-bold py-3 rounded-xl hover:bg-brand-dark">Saqlash</button>
           </form>
@@ -617,8 +756,36 @@ const AdminDashboard = () => {
               <input type="text" value={bannerForm.subtitle} onChange={(e) => setBannerForm({ ...bannerForm, subtitle: e.target.value })} className="w-full border rounded-xl p-2.5 text-xs outline-none focus:border-brand" placeholder="Amerikada ishlab chiqarilgan vitaminlar" />
             </div>
             <div>
-              <label className="block text-xs font-bold text-gray-700 mb-1">Slayd Rasm URL Manzili</label>
-              <input type="text" required value={bannerForm.image} onChange={(e) => setBannerForm({ ...bannerForm, image: e.target.value })} className="w-full border rounded-xl p-2.5 text-xs outline-none focus:border-brand" placeholder="https://..." />
+              <label className="block text-xs font-bold text-gray-700 mb-1">Slayd Rasmi (Kompyuterdan yuklash)</label>
+              <div className="space-y-2">
+                <input
+                  type="file"
+                  accept="image/png, image/jpeg, image/jpg, image/webp"
+                  onChange={async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    const formData = new FormData();
+                    formData.append("image", file);
+                    try {
+                      toast.loading("Rasm yuklanmoqda...", { id: "upload" });
+                      const { data } = await api.post("/admin/upload", formData, {
+                        headers: { "Content-Type": "multipart/form-data" }
+                      });
+                      setBannerForm({ ...bannerForm, image: data.url });
+                      toast.success("Rasm yuklandi!", { id: "upload" });
+                    } catch (err) {
+                      toast.error("Rasm yuklashda xatolik yuz berdi", { id: "upload" });
+                    }
+                  }}
+                  className="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-purple-50 file:text-brand hover:file:bg-purple-100"
+                />
+                {bannerForm.image && (
+                  <div className="flex items-center gap-2">
+                    <img src={bannerForm.image} alt="Preview" className="w-16 h-16 object-cover rounded-xl border border-gray-100 shadow-sm" />
+                    <span className="text-[10px] text-gray-500 truncate max-w-[200px]">{bannerForm.image}</span>
+                  </div>
+                )}
+              </div>
             </div>
             <button type="submit" className="w-full bg-brand text-white font-bold py-3 rounded-xl hover:bg-brand-dark">Saqlash</button>
           </form>

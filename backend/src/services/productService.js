@@ -1,4 +1,6 @@
+import mongoose from "mongoose";
 import Product from "../models/Product.js";
+import Category from "../models/Category.js";
 export const getProducts = async (query) => {
   const {
     category,
@@ -11,7 +13,18 @@ export const getProducts = async (query) => {
     limit = 12,
   } = query;
   const filter = { status: "active" };
-  if (category) filter.category = category;
+  if (category) {
+    if (mongoose.Types.ObjectId.isValid(category)) {
+      filter.category = category;
+    } else {
+      const cat = await Category.findOne({ slug: category });
+      if (cat) {
+        filter.category = cat._id;
+      } else {
+        return { products: [], total: 0, pages: 0 };
+      }
+    }
+  }
   if (seller) filter.seller = seller;
   if (minPrice || maxPrice) filter.price = {};
   if (minPrice) filter.price.$gte = Number(minPrice);

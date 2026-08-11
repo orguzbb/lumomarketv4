@@ -3,9 +3,15 @@ import * as adminController from '../controllers/adminController.js';
 import * as bannerController from '../controllers/bannerController.js';
 import * as settingsController from '../controllers/settingsController.js';
 import { protect, authorize } from '../middleware/auth.js';
+import { upload } from '../middleware/upload.js';
 
 const router = express.Router();
 router.use(protect, authorize('admin'));
+
+router.post('/upload', upload.single('image'), (req, res) => {
+  if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
+  res.json({ url: `/uploads/${req.file.filename}` });
+});
 
 router.get('/overview', adminController.getOverview);
 
