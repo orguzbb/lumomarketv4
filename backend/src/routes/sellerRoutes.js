@@ -1,0 +1,18 @@
+import express from 'express';
+import * as sellerController from '../controllers/sellerController.js';
+import { protect, authorize } from '../middleware/auth.js';
+import { upload } from '../middleware/upload.js';
+const router = express.Router();
+router.use(protect, authorize('seller'));
+router.get('/overview', sellerController.getOverview);
+router.get('/products', sellerController.getProducts);
+router.post('/products', sellerController.createProduct);
+router.put('/products/:id', sellerController.updateProduct);
+router.delete('/products/:id', sellerController.deleteProduct);
+router.get('/orders', sellerController.getOrders);
+router.patch('/orders/:id/status', sellerController.updateOrderStatus);
+router.get('/analytics', sellerController.getAnalytics);
+router.get('/store', sellerController.getStore);
+router.post('/store', upload.single('logo'), sellerController.createStore);
+router.put('/store', upload.single('logo'), sellerController.updateStore);
+export default router;

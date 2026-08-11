@@ -1,0 +1,12 @@
+import express from 'express';
+import * as productController from '../controllers/productController.js';
+import { protect, authorize } from '../middleware/auth.js';
+import { upload } from '../middleware/upload.js';
+const router = express.Router();
+router.get('/', productController.getProducts);
+router.get('/:id', productController.getProduct);
+router.post('/', protect, authorize('seller', 'admin'), productController.createProduct);
+router.put('/:id', protect, authorize('seller', 'admin'), productController.updateProduct);
+router.delete('/:id', protect, authorize('seller', 'admin'), productController.deleteProduct);
+router.post('/:id/images', protect, authorize('seller', 'admin'), upload.array('images', 5), productController.uploadImages);
+export default router;

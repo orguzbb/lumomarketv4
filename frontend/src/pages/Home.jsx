@@ -1,0 +1,374 @@
+import React, { useState, useEffect } from "react";
+import BannerSlider from "../components/BannerSlider";
+import ProductQuickViewModal from "../components/ProductQuickViewModal";
+import { useCart } from "../context/CartContext";
+import api from "../api/axios";
+import {
+  TbShirt,
+  TbSparkles,
+  TbDeviceMobile,
+  TbHome,
+  TbClock,
+  TbDeviceTv,
+  TbBallFootball,
+  TbCar,
+  TbHeart,
+  TbShoppingBag,
+  TbStar,
+  TbChevronRight,
+  TbFlame,
+  TbDiscount,
+  TbCheck
+} from "react-icons/tb";
+
+// Featured categories with crisp SVG icons
+const HOME_CATEGORIES = [
+  { id: "clothing", title: "Kiyim va poyabzal", icon: TbShirt, color: "bg-pink-50 text-pink-600 border-pink-100" },
+  { id: "beauty", title: "Go'zallik", icon: TbSparkles, color: "bg-purple-50 text-purple-600 border-purple-100" },
+  { id: "electronics", title: "Elektronika", icon: TbDeviceMobile, color: "bg-blue-50 text-blue-600 border-blue-100" },
+  { id: "appliances", title: "Maishiy texnika", icon: TbDeviceTv, color: "bg-amber-50 text-amber-600 border-amber-100" },
+  { id: "home", title: "Uy-ro'zg'or", icon: TbHome, color: "bg-emerald-50 text-emerald-600 border-emerald-100" },
+  { id: "accessories", title: "Aksessuarlar", icon: TbClock, color: "bg-indigo-50 text-indigo-600 border-indigo-100" },
+  { id: "sports", title: "Sport va hordiq", icon: TbBallFootball, color: "bg-teal-50 text-teal-600 border-teal-100" },
+  { id: "auto", title: "Avtotovarlar", icon: TbCar, color: "bg-rose-50 text-rose-600 border-rose-100" }
+];
+
+// Fallback demo products if DB is empty so page looks amazing immediately
+const DEMO_PRODUCTS = [
+  {
+    _id: "demo-1",
+    name: "AQSh Vitamin D3 + K2 Premium Complex (120 kapsula)",
+    price: 185000,
+    oldPrice: 240000,
+    image: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=600&q=80",
+    rating: 4.9,
+    reviewsCount: 342,
+    category: "beauty"
+  },
+  {
+    _id: "demo-2",
+    name: "Erkaklar uchun zamonaviy sport krossovkasi Uzum Edition",
+    price: 249000,
+    oldPrice: 320000,
+    image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80",
+    rating: 4.8,
+    reviewsCount: 198,
+    category: "clothing"
+  },
+  {
+    _id: "demo-3",
+    name: "Simsiz quloqchinlar TWS Bluetooth 5.3 Shovqin so'ndirish bilan",
+    price: 199000,
+    oldPrice: 290000,
+    image: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=600&q=80",
+    rating: 4.9,
+    reviewsCount: 512,
+    category: "electronics"
+  },
+  {
+    _id: "demo-4",
+    name: "Aqlli soat Smart Watch Ultra Series 9 (Suvdan himoyalangan)",
+    price: 349000,
+    oldPrice: 480000,
+    image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80",
+    rating: 4.7,
+    reviewsCount: 145,
+    category: "accessories"
+  },
+  {
+    _id: "demo-5",
+    name: "Oshxona kombayni Ko'p funksiyali blender set 800W",
+    price: 420000,
+    oldPrice: 550000,
+    image: "https://images.unsplash.com/photo-1570222094114-d054a817e56b?auto=format&fit=crop&w=600&q=80",
+    rating: 5.0,
+    reviewsCount: 89,
+    category: "appliances"
+  },
+  {
+    _id: "demo-6",
+    name: "Ayollar kremi Nemlantiruvchi va parvarishlovchi Hyaluronic Acid",
+    price: 95000,
+    oldPrice: 130000,
+    image: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=80",
+    rating: 4.9,
+    reviewsCount: 276,
+    category: "beauty"
+  },
+  {
+    _id: "demo-7",
+    name: "Simsiz elektr choynak Zanglamaydigan po'lat 1.8 Litr",
+    price: 155000,
+    oldPrice: 210000,
+    image: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80",
+    rating: 4.6,
+    reviewsCount: 110,
+    category: "appliances"
+  },
+  {
+    _id: "demo-8",
+    name: "Erkaklar kostyum shimi Klassik dizayn Premium Paxta",
+    price: 380000,
+    oldPrice: 520000,
+    image: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=600&q=80",
+    rating: 4.9,
+    reviewsCount: 64,
+    category: "clothing"
+  }
+];
+
+const Home = () => {
+  const { addToCart } = useCart();
+  const [products, setProducts] = useState(DEMO_PRODUCTS);
+  const [selectedQuickView, setSelectedQuickView] = useState(null);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const { data } = await api.get("/products");
+        if (data && data.products && data.products.length > 0) {
+          setProducts(data.products);
+        }
+      } catch (err) {
+        console.warn("Using fallback demo products", err);
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  return (
+    <div className="space-y-10 pb-10">
+      {/* 1. Hero Banner Slider */}
+      <section className="pt-2">
+        <BannerSlider />
+      </section>
+
+      {/* 2. Popular Categories Grid (SVG Icons ONLY) */}
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <span>Ommabop turkumlar</span>
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-3">
+          {HOME_CATEGORIES.map((cat) => {
+            const Icon = cat.icon;
+            return (
+              <a
+                key={cat.id}
+                href={`#${cat.id}`}
+                className={`p-4 rounded-2xl border flex flex-col items-center justify-center text-center gap-2.5 transition-all duration-300 hover:-translate-y-1 hover:shadow-md ${cat.color}`}
+              >
+                <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm">
+                  <Icon className="w-6 h-6" />
+                </div>
+                <span className="text-xs font-bold leading-tight">{cat.title}</span>
+              </a>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* 3. Flash Sale / Super Arzon Narxlar Section */}
+      <section className="bg-gradient-to-r from-purple-900 via-brand to-purple-800 rounded-3xl p-6 sm:p-8 text-white shadow-xl">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-yellow-400 text-purple-950 flex items-center justify-center font-black animate-pulse">
+              <TbFlame className="w-6 h-6" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-black tracking-tight">Kunning super takliflari</h2>
+              <p className="text-xs text-purple-200">Eng yuqori chegirmali mahsulotlar topoplami</p>
+            </div>
+          </div>
+          <div className="bg-white/10 backdrop-blur-md px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2">
+            <TbDiscount className="w-4 h-4 text-yellow-300" />
+            <span>Chegirmalar 50% gacha</span>
+          </div>
+        </div>
+
+        {/* Product Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {products.slice(0, 4).map((p) => {
+            const price = p.price || 150000;
+            const oldPrice = p.oldPrice || Math.round(price * 1.3);
+            const discountPercent = Math.round(((oldPrice - price) / oldPrice) * 100);
+            const monthlyPayment = Math.round(price / 12);
+            const img = p.images?.[0]?.url || p.image || DEMO_PRODUCTS[0].image;
+
+            return (
+              <div
+                key={p._id}
+                className="bg-white text-gray-900 rounded-2xl p-4 flex flex-col justify-between shadow-md hover:shadow-xl transition-all duration-300 group"
+              >
+                <div className="relative mb-3 cursor-pointer" onClick={() => setSelectedQuickView(p)}>
+                  <div className="w-full h-44 rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center">
+                    <img
+                      src={img}
+                      alt={p.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
+                  {discountPercent > 0 && (
+                    <span className="absolute top-2 left-2 bg-yellow-400 text-purple-950 font-black text-[11px] px-2 py-0.5 rounded-lg shadow">
+                      -{discountPercent}%
+                    </span>
+                  )}
+                </div>
+
+                <div className="space-y-2 flex-1 flex flex-col justify-between">
+                  <h3
+                    onClick={() => setSelectedQuickView(p)}
+                    className="text-xs font-bold text-gray-800 line-clamp-2 hover:text-brand cursor-pointer"
+                  >
+                    {p.name}
+                  </h3>
+
+                  {/* Installment Badge */}
+                  <div className="bg-purple-50 text-brand text-[10px] font-extrabold px-2 py-1 rounded-md inline-block">
+                    {monthlyPayment.toLocaleString()} so'm/oy
+                  </div>
+
+                  <div className="pt-1 flex items-baseline justify-between">
+                    <div>
+                      <div className="text-base font-extrabold text-brand">
+                        {price.toLocaleString()} <span className="text-[10px]">so'm</span>
+                      </div>
+                      {oldPrice > price && (
+                        <div className="text-[11px] text-gray-400 line-through">
+                          {oldPrice.toLocaleString()} so'm
+                        </div>
+                      )}
+                    </div>
+
+                    <button
+                      onClick={() => addToCart(p, 1)}
+                      className="w-9 h-9 rounded-xl bg-brand hover:bg-brand-dark text-white flex items-center justify-center shadow-md shadow-brand/20 transition-all active:scale-90"
+                      title="Savatga qo'shish"
+                    >
+                      <TbShoppingBag className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* 4. Main Products List (Uzum Market Card Style) */}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900">
+            Sizga yoqishi mumkin
+          </h2>
+          <a href="#all" className="text-xs font-bold text-brand hover:underline flex items-center gap-1">
+            <span>Barchasini ko'rish</span>
+            <TbChevronRight className="w-4 h-4" />
+          </a>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4 sm:gap-6">
+          {products.map((p) => {
+            const price = p.price || 150000;
+            const oldPrice = p.oldPrice || Math.round(price * 1.25);
+            const discountPercent = Math.round(((oldPrice - price) / oldPrice) * 100);
+            const monthlyPayment = Math.round(price / 12);
+            const rating = p.rating || 4.9;
+            const reviewsCount = p.reviewsCount || 84;
+            const img = p.images?.[0]?.url || p.image || DEMO_PRODUCTS[0].image;
+
+            return (
+              <div
+                key={p._id}
+                className="bg-white rounded-2xl border border-gray-100 p-3.5 flex flex-col justify-between shadow-sm hover:shadow-xl hover:border-purple-200 transition-all duration-300 group"
+              >
+                {/* Image */}
+                <div className="relative mb-3 cursor-pointer" onClick={() => setSelectedQuickView(p)}>
+                  <div className="w-full h-48 sm:h-52 rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center">
+                    <img
+                      src={img}
+                      alt={p.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
+                  {discountPercent > 0 && (
+                    <span className="absolute top-2 left-2 bg-red-500 text-white font-bold text-[10px] px-2 py-0.5 rounded-md shadow">
+                      -{discountPercent}%
+                    </span>
+                  )}
+                  <button
+                    className="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/80 backdrop-blur-md flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors shadow-sm"
+                    title="Saralanganlarga qo'shish"
+                  >
+                    <TbHeart className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Content */}
+                <div className="space-y-2 flex-1 flex flex-col justify-between">
+                  <div>
+                    {/* Rating */}
+                    <div className="flex items-center gap-1 text-[11px] text-gray-500 mb-1">
+                      <TbStar className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                      <span className="font-bold text-gray-800">{rating}</span>
+                      <span>({reviewsCount} sharh)</span>
+                    </div>
+
+                    {/* Title */}
+                    <h3
+                      onClick={() => setSelectedQuickView(p)}
+                      className="text-xs sm:text-sm font-semibold text-gray-800 line-clamp-2 leading-snug hover:text-brand cursor-pointer mb-2"
+                    >
+                      {p.name}
+                    </h3>
+                  </div>
+
+                  {/* Bottom section */}
+                  <div className="space-y-2">
+                    {/* Installment Badge */}
+                    <div className="bg-yellow-100/70 text-yellow-900 text-[10px] font-bold px-2 py-0.5 rounded-md inline-block">
+                      {monthlyPayment.toLocaleString()} so'm/oy
+                    </div>
+
+                    <div className="pt-1 flex items-end justify-between">
+                      <div>
+                        {oldPrice > price && (
+                          <div className="text-[11px] text-gray-400 line-through font-medium">
+                            {oldPrice.toLocaleString()} so'm
+                          </div>
+                        )}
+                        <div className="text-sm sm:text-base font-black text-gray-900">
+                          {price.toLocaleString()} <span className="text-[10px] font-normal">so'm</span>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => addToCart(p, 1)}
+                        className="w-9 h-9 rounded-xl border border-brand text-brand hover:bg-brand hover:text-white flex items-center justify-center transition-all active:scale-90 shadow-sm"
+                        title="Savatga qo'shish"
+                      >
+                        <TbShoppingBag className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Quick View Modal */}
+      {selectedQuickView && (
+        <ProductQuickViewModal
+          product={selectedQuickView}
+          onClose={() => setSelectedQuickView(null)}
+        />
+      )}
+    </div>
+  );
+};
+
+export default Home;

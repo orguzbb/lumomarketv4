@@ -1,0 +1,16 @@
+{
+  "name": "lumo-market-v3",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "install:all": "npm --prefix backend install && npm --prefix frontend install",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "build": "npm --prefix frontend run build",
+    "start": "pm2 start ecosystem.config.cjs"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

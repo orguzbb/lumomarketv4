@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-brand: #7000ff;
+  --color-brand-dark: #5b00d6;
+  --color-warm-neutral: #f4f5f7;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--color-warm-neutral);
+  color: #1f2937;
+  overflow-x: hidden;
+}
+
+/* Hide scrollbar for category horizontal nav */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
