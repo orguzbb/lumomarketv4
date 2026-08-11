@@ -31,7 +31,9 @@ export const googleAuth = async (req, res, next) => {
     const { user, accessToken, refreshToken } = await authService.loginWithGoogle(parsed.data.idToken);
     setCookie(res, refreshToken);
     res.json({ user: { id: user._id, fullname: user.fullname, email: user.email, role: user.role }, accessToken });
-  } catch (error) { next(error); }
+  } catch (error) {
+    res.status(400).json({ message: error.message || 'Google auth bajarilmadi' });
+  }
 };
 
 export const refresh = async (req, res, next) => {
