@@ -2,6 +2,12 @@
 node_modules/
 **/node_modules/
 
+# lockfiles
+package-lock.json
+**/package-lock.json
+yarn.lock
+**/yarn.lock
+
 # build outputs
 dist/
 **/dist/
@@ -18,4 +24,4 @@ yarn-error.log*
 .DS_Store
 Thumbs.db
 
-# NOTE: .env files included per explicit user instruction for server deployment clone
+# NOTE: .env files included per explicit user instruction
