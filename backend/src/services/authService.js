@@ -1,5 +1,4 @@
 import User from "../models/User.js";
-import axios from "axios";
 import { hashString, compareString } from "../utils/hash.js";
 import {
   generateAccessToken,
@@ -50,35 +49,41 @@ export const loginWithGoogle = async (idToken) => {
 
   if (!decoded) {
     try {
-      const { data } = await axios.get(`https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`);
-      if (data && data.email) {
-        decoded = {
-          uid: data.sub || data.user_id,
-          email: data.email,
-          name: data.name || data.given_name || data.email.split("@")[0],
-          picture: data.picture,
-        };
+      const resp = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`);
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data && data.email) {
+          decoded = {
+            uid: data.sub || data.user_id,
+            email: data.email,
+            name: data.name || data.given_name || data.email.split("@")[0],
+            picture: data.picture,
+          };
+        }
       }
     } catch (err) {
       console.warn("Google TokenInfo API fallback failed, attempting JWT payload decode");
-      try {
-        const base64Url = idToken.split(".")[1];
-        if (base64Url) {
-          const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-          const jsonPayload = Buffer.from(base64, "base64").toString("utf8");
-          const parsed = JSON.parse(jsonPayload);
-          if (parsed.email) {
-            decoded = {
-              uid: parsed.sub || parsed.user_id || parsed.email,
-              email: parsed.email,
-              name: parsed.name || parsed.given_name || parsed.email.split("@")[0],
-              picture: parsed.picture,
-            };
-          }
+    }
+  }
+
+  if (!decoded) {
+    try {
+      const base64Url = idToken.split(".")[1];
+      if (base64Url) {
+        const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+        const jsonPayload = Buffer.from(base64, "base64").toString("utf8");
+        const parsed = JSON.parse(jsonPayload);
+        if (parsed.email) {
+          decoded = {
+            uid: parsed.sub || parsed.user_id || parsed.email,
+            email: parsed.email,
+            name: parsed.name || parsed.given_name || parsed.email.split("@")[0],
+            picture: parsed.picture,
+          };
         }
-      } catch (parseErr) {
-        console.error("JWT payload parse error", parseErr);
       }
+    } catch (parseErr) {
+      console.error("JWT payload parse error", parseErr);
     }
   }
 
