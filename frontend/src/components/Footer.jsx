@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import api from "../api/axios";
 import {
   TbBrandTelegram,
@@ -13,7 +14,8 @@ import {
   TbClock24
 } from "react-icons/tb";
 
-const Footer = () => {
+const Footer = ({ onOpenFaq }) => {
+  const { t } = useTranslation();
   const [settings, setSettings] = useState({
     phone: "+998 88 900 80 81",
     telegram: "https://t.me/lumomarket",
@@ -35,6 +37,12 @@ const Footer = () => {
     fetchSettings();
   }, []);
 
+  const handleFaqClick = (e) => {
+    e.preventDefault();
+    window.location.hash = "faq";
+    if (onOpenFaq) onOpenFaq();
+  };
+
   return (
     <footer className="bg-white border-t border-gray-200 mt-16 text-gray-600 text-sm">
       {/* Advantage Features Banner */}
@@ -45,8 +53,8 @@ const Footer = () => {
               <TbClock24 className="w-6 h-6" />
             </div>
             <div>
-              <h4 className="font-bold text-gray-900 text-sm">1 kunda yetkazib berish</h4>
-              <p className="text-xs text-gray-500">O'zbekiston bo'ylab tezkor yetkazish</p>
+              <h4 className="font-bold text-gray-900 text-sm">{t("oneDayDelivery")}</h4>
+              <p className="text-xs text-gray-500">{t("oneDayDeliveryDesc")}</p>
             </div>
           </div>
 
@@ -55,8 +63,8 @@ const Footer = () => {
               <TbShieldCheck className="w-6 h-6" />
             </div>
             <div>
-              <h4 className="font-bold text-gray-900 text-sm">Xavfsiz to'lov</h4>
-              <p className="text-xs text-gray-500">Uzcard, Humo, Visa va Naqd pul</p>
+              <h4 className="font-bold text-gray-900 text-sm">{t("securePayment")}</h4>
+              <p className="text-xs text-gray-500">{t("securePaymentDesc")}</p>
             </div>
           </div>
 
@@ -65,8 +73,8 @@ const Footer = () => {
               <TbTruckReturn className="w-6 h-6" />
             </div>
             <div>
-              <h4 className="font-bold text-gray-900 text-sm">Oson qaytarish</h4>
-              <p className="text-xs text-gray-500">10 kun ichida tovarni qaytarish</p>
+              <h4 className="font-bold text-gray-900 text-sm">{t("easyReturns")}</h4>
+              <p className="text-xs text-gray-500">{t("easyReturnsDesc")}</p>
             </div>
           </div>
 
@@ -75,8 +83,8 @@ const Footer = () => {
               <TbHeadphones className="w-6 h-6" />
             </div>
             <div>
-              <h4 className="font-bold text-gray-900 text-sm">24/7 Qo'llab-quvvatlash</h4>
-              <p className="text-xs text-gray-500">Doimiy aloqadamiz</p>
+              <h4 className="font-bold text-gray-900 text-sm">{t("support247")}</h4>
+              <p className="text-xs text-gray-500">{t("support247Desc")}</p>
             </div>
           </div>
         </div>
@@ -95,7 +103,7 @@ const Footer = () => {
             </span>
           </Link>
           <p className="text-xs text-gray-500 leading-relaxed">
-            O'zbekistondagi eng qulay va hamyonbop onlayn marketplace. Har kuni minglab sifatli mahsulotlar va arzon narxlar!
+            {t("aboutMarketplace")}
           </p>
           <div className="flex items-center gap-3">
             {settings.telegram && (
@@ -123,28 +131,28 @@ const Footer = () => {
 
         {/* Customer Care */}
         <div className="space-y-3">
-          <h4 className="font-bold text-gray-900 text-sm">Foydalanuvchilarga</h4>
+          <h4 className="font-bold text-gray-900 text-sm">{t("forUsers")}</h4>
           <ul className="space-y-2 text-xs text-gray-500">
-            <li><a href="#faq" className="hover:text-brand transition-colors">Savol-javoblar</a></li>
-            <li><a href="#delivery" className="hover:text-brand transition-colors">Yetkazib berish va topshirish punktlari</a></li>
-            <li><a href="#returns" className="hover:text-brand transition-colors">Tovarlarni qaytarish</a></li>
-            <li><a href="#payment" className="hover:text-brand transition-colors">Bo'lib to'lash shartlari</a></li>
+            <li><a href="#faq" onClick={handleFaqClick} className="hover:text-brand transition-colors cursor-pointer">{t("faq")}</a></li>
+            <li><a href="#faq" onClick={handleFaqClick} className="hover:text-brand transition-colors cursor-pointer">{t("pickupPoints")}</a></li>
+            <li><a href="#faq" onClick={handleFaqClick} className="hover:text-brand transition-colors cursor-pointer">{t("returnsPolicy")}</a></li>
+            <li><a href="#faq" onClick={handleFaqClick} className="hover:text-brand transition-colors cursor-pointer">{t("installmentTerms")}</a></li>
           </ul>
         </div>
 
         {/* For Sellers */}
         <div className="space-y-3">
-          <h4 className="font-bold text-gray-900 text-sm">Tadbirkorlarga</h4>
+          <h4 className="font-bold text-gray-900 text-sm">{t("forSellers")}</h4>
           <ul className="space-y-2 text-xs text-gray-500">
-            <li><a href="#sell" className="hover:text-brand transition-colors">Lumo Marketda sotish</a></li>
-            <li><a href="#seller-cabinet" className="hover:text-brand transition-colors">Sotuvchi kabinetiga kirish</a></li>
-            <li><a href="#fulfillment" className="hover:text-brand transition-colors">Fulfillment markazi</a></li>
+            <li><a href="#faq" onClick={handleFaqClick} className="hover:text-brand transition-colors cursor-pointer">{t("sellOnLumo")}</a></li>
+            <li><Link to="/seller" className="hover:text-brand transition-colors">{t("sellerCabinet")}</Link></li>
+            <li><a href="#faq" onClick={handleFaqClick} className="hover:text-brand transition-colors cursor-pointer">{t("fulfillmentCenter")}</a></li>
           </ul>
         </div>
 
         {/* Contacts */}
         <div className="space-y-3">
-          <h4 className="font-bold text-gray-900 text-sm">Aloqa</h4>
+          <h4 className="font-bold text-gray-900 text-sm">{t("contactUs")}</h4>
           <div className="space-y-2 text-xs text-gray-500">
             <div className="flex items-center gap-2">
               <TbHeadphones className="w-4 h-4 text-brand" />
@@ -157,7 +165,7 @@ const Footer = () => {
           </div>
           
           <div className="pt-2">
-            <h5 className="text-xs font-semibold text-gray-700 mb-2">Qabul qilinadigan to'lovlar:</h5>
+            <h5 className="text-xs font-semibold text-gray-700 mb-2">{t("acceptedPayments")}</h5>
             <div className="flex items-center gap-2">
               <span className="px-2.5 py-1 bg-gray-100 text-gray-800 rounded font-bold text-[10px]">UZCARD</span>
               <span className="px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded font-bold text-[10px]">HUMO</span>
@@ -171,8 +179,8 @@ const Footer = () => {
       {/* Bottom Copyright */}
       <div className="border-t border-gray-100 bg-gray-50 py-4 text-center text-xs text-gray-400">
         <div className="container mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <span>&copy; {new Date().getFullYear()} Lumo Market V3. Barcha huquqlar himoyalangan.</span>
-          <span>Maxfiylik kelishuvi | Foydalanish shartlari</span>
+          <span>&copy; {new Date().getFullYear()} {t("allRightsReserved")}</span>
+          <span>{t("privacyPolicy")}</span>
         </div>
       </div>
     </footer>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import api from "../api/axios";
 import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
@@ -14,17 +15,17 @@ import {
   TbArrowLeft
 } from "react-icons/tb";
 
-const CATEGORY_NAMES = {
-  clothing: "Kiyim va poyabzal",
-  beauty: "Go'zallik va parvarish",
-  electronics: "Elektronika va gadjetlar",
-  appliances: "Maishiy texnika",
-  home: "Uy va ro'zg'or buyumlari",
-  accessories: "Aksessuarlar",
-  sports: "Sport va hordiq",
-  auto: "Avtotovarlar",
-  kids: "Bolalar tovarlari",
-  books: "Kitoblar va kantselyariya"
+const CATEGORY_TRANSLATION_KEYS = {
+  clothing: "clothing",
+  beauty: "beauty",
+  electronics: "electronics",
+  appliances: "appliances",
+  home: "homeItems",
+  accessories: "accessories",
+  sports: "sports",
+  auto: "auto",
+  kids: "kids",
+  books: "books"
 };
 
 const DEMO_PRODUCTS = [
@@ -112,6 +113,7 @@ const DEMO_PRODUCTS = [
 
 const CategoryProducts = () => {
   const { categoryId } = useParams();
+  const { t } = useTranslation();
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
 
@@ -119,7 +121,8 @@ const CategoryProducts = () => {
   const [loading, setLoading] = useState(true);
   const [selectedQuickView, setSelectedQuickView] = useState(null);
 
-  const categoryTitle = CATEGORY_NAMES[categoryId] || categoryId || "Turkum";
+  const translationKey = CATEGORY_TRANSLATION_KEYS[categoryId];
+  const categoryTitle = translationKey ? t(translationKey) : categoryId || t("catalog");
 
   useEffect(() => {
     const fetchCategoryProducts = async () => {
@@ -153,10 +156,10 @@ const CategoryProducts = () => {
       <nav className="flex items-center gap-2 text-xs text-gray-500 py-2">
         <Link to="/" className="hover:text-brand flex items-center gap-1">
           <TbHome className="w-4 h-4 text-brand" />
-          <span>Bosh sahifa</span>
+          <span>{t("home")}</span>
         </Link>
         <TbChevronRight className="w-3.5 h-3.5 text-gray-400" />
-        <span className="text-gray-400">Kategoriyalar</span>
+        <span className="text-gray-400">{t("catalog")}</span>
         <TbChevronRight className="w-3.5 h-3.5 text-gray-400" />
         <span className="font-bold text-gray-800">{categoryTitle}</span>
       </nav>
@@ -166,7 +169,7 @@ const CategoryProducts = () => {
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900">{categoryTitle}</h1>
           <p className="text-xs text-gray-500 mt-1">
-            Topilgan mahsulotlar soni: <span className="font-bold text-brand">{products.length} ta</span>
+            {t("foundProducts")}: <span className="font-bold text-brand">{products.length} ta</span>
           </p>
         </div>
 
@@ -175,7 +178,7 @@ const CategoryProducts = () => {
           className="inline-flex items-center gap-2 text-xs font-bold text-brand hover:text-brand-dark bg-purple-50 hover:bg-purple-100 px-4 py-2 rounded-xl transition-all"
         >
           <TbArrowLeft className="w-4 h-4" />
-          <span>Bosh sahifaga qaytish</span>
+          <span>{t("backToHome")}</span>
         </Link>
       </div>
 
@@ -224,7 +227,7 @@ const CategoryProducts = () => {
                         ? "text-red-500 bg-red-50"
                         : "text-gray-400 hover:text-red-500"
                     }`}
-                    title="Saralanganlarga saqlash"
+                    title={t("favorites")}
                   >
                     <TbHeart className={`w-4 h-4 ${isInWishlist(p._id || p.id) ? "fill-red-500 text-red-500" : ""}`} />
                   </button>
@@ -236,7 +239,7 @@ const CategoryProducts = () => {
                     <div className="flex items-center gap-1 text-[11px] text-gray-500 mb-1">
                       <TbStar className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
                       <span className="font-bold text-gray-800">{rating}</span>
-                      <span>({reviewsCount} sharh)</span>
+                      <span>({reviewsCount} {t("reviewsCount")})</span>
                     </div>
                     <h3
                       onClick={() => setSelectedQuickView(p)}
@@ -248,7 +251,7 @@ const CategoryProducts = () => {
 
                   <div className="space-y-2">
                     <div className="bg-yellow-100/70 text-yellow-900 text-[10px] font-bold px-2 py-0.5 rounded-md inline-block">
-                      {monthlyPayment.toLocaleString()} so'm/oy
+                      {monthlyPayment.toLocaleString()} {t("perMonth")}
                     </div>
 
                     <div className="pt-1 flex items-end justify-between">
@@ -266,7 +269,7 @@ const CategoryProducts = () => {
                       <button
                         onClick={() => addToCart(p, 1)}
                         className="w-9 h-9 rounded-xl border border-brand text-brand hover:bg-brand hover:text-white flex items-center justify-center transition-all active:scale-90 shadow-sm"
-                        title="Savatga qo'shish"
+                        title={t("addToCart")}
                       >
                         <TbShoppingBag className="w-4 h-4" />
                       </button>
@@ -283,17 +286,17 @@ const CategoryProducts = () => {
             <TbPackageOff className="w-10 h-10" />
           </div>
           <h3 className="text-lg font-bold text-gray-800 mb-1">
-            Ushbu turkumda hozircha mahsulotlar yo'q
+            {t("noProductsCategory")}
           </h3>
           <p className="text-xs text-gray-500 max-w-sm mb-6">
-            Tez orada yangi mahsulotlar qo'shiladi. Asosiy sahifaga qaytib boshqa mahsulotlarni ko'rishingiz mumkin.
+            {t("noProductsSubtitle")}
           </p>
           <Link
             to="/"
             className="bg-brand hover:bg-brand-dark text-white font-bold text-sm px-6 py-3 rounded-xl shadow-lg shadow-brand/20 transition-all flex items-center gap-2"
           >
             <TbArrowLeft className="w-4 h-4" />
-            <span>Bosh sahifaga qaytish</span>
+            <span>{t("backToHome")}</span>
           </Link>
         </div>
       )}

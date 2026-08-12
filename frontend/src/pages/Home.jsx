@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import BannerSlider from "../components/BannerSlider";
 import ProductQuickViewModal from "../components/ProductQuickViewModal";
 import { useCart } from "../context/CartContext";
@@ -18,20 +20,19 @@ import {
   TbStar,
   TbChevronRight,
   TbFlame,
-  TbDiscount,
-  TbCheck
+  TbDiscount
 } from "react-icons/tb";
 
 // Featured categories with crisp SVG icons
 const HOME_CATEGORIES = [
-  { id: "clothing", title: "Kiyim va poyabzal", icon: TbShirt, color: "bg-pink-50 text-pink-600 border-pink-100" },
-  { id: "beauty", title: "Go'zallik", icon: TbSparkles, color: "bg-purple-50 text-purple-600 border-purple-100" },
-  { id: "electronics", title: "Elektronika", icon: TbDeviceMobile, color: "bg-blue-50 text-blue-600 border-blue-100" },
-  { id: "appliances", title: "Maishiy texnika", icon: TbDeviceTv, color: "bg-amber-50 text-amber-600 border-amber-100" },
-  { id: "home", title: "Uy-ro'zg'or", icon: TbHome, color: "bg-emerald-50 text-emerald-600 border-emerald-100" },
-  { id: "accessories", title: "Aksessuarlar", icon: TbClock, color: "bg-indigo-50 text-indigo-600 border-indigo-100" },
-  { id: "sports", title: "Sport va hordiq", icon: TbBallFootball, color: "bg-teal-50 text-teal-600 border-teal-100" },
-  { id: "auto", title: "Avtotovarlar", icon: TbCar, color: "bg-rose-50 text-rose-600 border-rose-100" }
+  { id: "clothing", key: "clothing", icon: TbShirt, color: "bg-pink-50 text-pink-600 border-pink-100" },
+  { id: "beauty", key: "beauty", icon: TbSparkles, color: "bg-purple-50 text-purple-600 border-purple-100" },
+  { id: "electronics", key: "electronics", icon: TbDeviceMobile, color: "bg-blue-50 text-blue-600 border-blue-100" },
+  { id: "appliances", key: "appliances", icon: TbDeviceTv, color: "bg-amber-50 text-amber-600 border-amber-100" },
+  { id: "home", key: "homeItems", icon: TbHome, color: "bg-emerald-50 text-emerald-600 border-emerald-100" },
+  { id: "accessories", key: "accessories", icon: TbClock, color: "bg-indigo-50 text-indigo-600 border-indigo-100" },
+  { id: "sports", key: "sports", icon: TbBallFootball, color: "bg-teal-50 text-teal-600 border-teal-100" },
+  { id: "auto", key: "auto", icon: TbCar, color: "bg-rose-50 text-rose-600 border-rose-100" }
 ];
 
 // Fallback demo products if DB is empty so page looks amazing immediately
@@ -119,10 +120,28 @@ const DEMO_PRODUCTS = [
 ];
 
 const Home = () => {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
   const [products, setProducts] = useState(DEMO_PRODUCTS);
   const [selectedQuickView, setSelectedQuickView] = useState(null);
+
+  // Check URL hash for category navigation (e.g. #clothing, #beauty, #electronics)
+  useEffect(() => {
+    const handleHash = () => {
+      const hash = window.location.hash.replace("#", "");
+      if (hash && hash !== "faq" && hash !== "all") {
+        const matchingCat = HOME_CATEGORIES.find((c) => c.id === hash);
+        if (matchingCat) {
+          navigate(`/category/${matchingCat.id}`);
+        }
+      }
+    };
+    handleHash();
+    window.addEventListener("hashchange", handleHash);
+    return () => window.removeEventListener("hashchange", handleHash);
+  }, [navigate]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -149,7 +168,7 @@ const Home = () => {
       <section>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <span>Ommabop turkumlar</span>
+            <span>{t("popularCategories")}</span>
           </h2>
         </div>
 
@@ -157,16 +176,16 @@ const Home = () => {
           {HOME_CATEGORIES.map((cat) => {
             const Icon = cat.icon;
             return (
-              <a
+              <Link
                 key={cat.id}
-                href={`#${cat.id}`}
+                to={`/category/${cat.id}`}
                 className={`p-4 rounded-2xl border flex flex-col items-center justify-center text-center gap-2.5 transition-all duration-300 hover:-translate-y-1 hover:shadow-md ${cat.color}`}
               >
                 <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm">
                   <Icon className="w-6 h-6" />
                 </div>
-                <span className="text-xs font-bold leading-tight">{cat.title}</span>
-              </a>
+                <span className="text-xs font-bold leading-tight">{t(cat.key)}</span>
+              </Link>
             );
           })}
         </div>
@@ -180,13 +199,13 @@ const Home = () => {
               <TbFlame className="w-6 h-6" />
             </div>
             <div>
-              <h2 className="text-2xl font-black tracking-tight">Kunning super takliflari</h2>
-              <p className="text-xs text-purple-200">Eng yuqori chegirmali mahsulotlar topoplami</p>
+              <h2 className="text-2xl font-black tracking-tight">{t("superDeals")}</h2>
+              <p className="text-xs text-purple-200">{t("superDealsSubtitle")}</p>
             </div>
           </div>
           <div className="bg-white/10 backdrop-blur-md px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2">
             <TbDiscount className="w-4 h-4 text-yellow-300" />
-            <span>Chegirmalar 50% gacha</span>
+            <span>{t("discountsUpTo")}</span>
           </div>
         </div>
 
@@ -229,7 +248,7 @@ const Home = () => {
 
                   {/* Installment Badge */}
                   <div className="bg-purple-50 text-brand text-[10px] font-extrabold px-2 py-1 rounded-md inline-block">
-                    {monthlyPayment.toLocaleString()} so'm/oy
+                    {monthlyPayment.toLocaleString()} {t("perMonth")}
                   </div>
 
                   <div className="pt-1 flex items-baseline justify-between">
@@ -247,7 +266,7 @@ const Home = () => {
                     <button
                       onClick={() => addToCart(p, 1)}
                       className="w-9 h-9 rounded-xl bg-brand hover:bg-brand-dark text-white flex items-center justify-center shadow-md shadow-brand/20 transition-all active:scale-90"
-                      title="Savatga qo'shish"
+                      title={t("addToCart")}
                     >
                       <TbShoppingBag className="w-4 h-4" />
                     </button>
@@ -263,12 +282,12 @@ const Home = () => {
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900">
-            Sizga yoqishi mumkin
+            {t("youMightLike")}
           </h2>
-          <a href="#all" className="text-xs font-bold text-brand hover:underline flex items-center gap-1">
-            <span>Barchasini ko'rish</span>
+          <Link to="/category/all" className="text-xs font-bold text-brand hover:underline flex items-center gap-1">
+            <span>{t("seeAll")}</span>
             <TbChevronRight className="w-4 h-4" />
-          </a>
+          </Link>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4 sm:gap-6">
@@ -310,7 +329,7 @@ const Home = () => {
                         ? "text-red-500 bg-red-50"
                         : "text-gray-400 hover:text-red-500"
                     }`}
-                    title="Saralanganlarga saqlash"
+                    title={t("favorites")}
                   >
                     <TbHeart className={`w-4 h-4 ${isInWishlist(p._id || p.id) ? "fill-red-500 text-red-500" : ""}`} />
                   </button>
@@ -323,7 +342,7 @@ const Home = () => {
                     <div className="flex items-center gap-1 text-[11px] text-gray-500 mb-1">
                       <TbStar className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
                       <span className="font-bold text-gray-800">{rating}</span>
-                      <span>({reviewsCount} sharh)</span>
+                      <span>({reviewsCount} {t("reviewsCount")})</span>
                     </div>
 
                     {/* Title */}
@@ -339,7 +358,7 @@ const Home = () => {
                   <div className="space-y-2">
                     {/* Installment Badge */}
                     <div className="bg-yellow-100/70 text-yellow-900 text-[10px] font-bold px-2 py-0.5 rounded-md inline-block">
-                      {monthlyPayment.toLocaleString()} so'm/oy
+                      {monthlyPayment.toLocaleString()} {t("perMonth")}
                     </div>
 
                     <div className="pt-1 flex items-end justify-between">
@@ -357,7 +376,7 @@ const Home = () => {
                       <button
                         onClick={() => addToCart(p, 1)}
                         className="w-9 h-9 rounded-xl border border-brand text-brand hover:bg-brand hover:text-white flex items-center justify-center transition-all active:scale-90 shadow-sm"
-                        title="Savatga qo'shish"
+                        title={t("addToCart")}
                       >
                         <TbShoppingBag className="w-4 h-4" />
                       </button>

@@ -6,6 +6,7 @@ import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
 import { useTranslation } from "react-i18next";
 import CatalogModal from "./CatalogModal";
+import LanguageSelector from "./LanguageSelector";
 import {
   TbMapPin,
   TbChevronDown,
@@ -29,29 +30,30 @@ import {
 } from "react-icons/tb";
 
 const CATEGORY_NAV_ITEMS = [
-  { id: "clothing", label: "Kiyim va poyabzal", icon: TbShirt },
-  { id: "beauty", label: "Go'zallik va parvarish", icon: TbSparkles },
-  { id: "electronics", label: "Elektronika", icon: TbDeviceMobile },
-  { id: "appliances", label: "Maishiy texnika", icon: TbDeviceTv },
-  { id: "home", label: "Uy-ro'zg'or buyumlari", icon: TbHome },
-  { id: "accessories", label: "Aksessuarlar", icon: TbClock },
-  { id: "sports", label: "Sport va hordiq", icon: TbBallFootball },
-  { id: "auto", label: "Avtotovarlar", icon: TbCar }
+  { id: "clothing", key: "clothing", icon: TbShirt },
+  { id: "beauty", key: "beauty", icon: TbSparkles },
+  { id: "electronics", key: "electronics", icon: TbDeviceMobile },
+  { id: "appliances", key: "appliances", icon: TbDeviceTv },
+  { id: "home", key: "homeItems", icon: TbHome },
+  { id: "accessories", key: "accessories", icon: TbClock },
+  { id: "sports", key: "sports", icon: TbBallFootball },
+  { id: "auto", key: "auto", icon: TbCar }
 ];
 
-const Navbar = () => {
+const Navbar = ({ onOpenFaq }) => {
   const { user, logout } = useContext(AuthContext);
   const { selectedLocation, openModal: openRegionModal } = useLocation();
   const { totalCount, openDrawer } = useCart();
   const { wishlistCount } = useWishlist();
-  const { i18n } = useTranslation();
+  const { t } = useTranslation();
 
   const [isCatalogOpen, setIsCatalogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const changeLang = (lang) => {
-    i18n.changeLanguage(lang);
-    localStorage.setItem("lang", lang);
+  const handleFaqClick = (e) => {
+    e.preventDefault();
+    window.location.hash = "faq";
+    if (onOpenFaq) onOpenFaq();
   };
 
   return (
@@ -67,7 +69,7 @@ const Navbar = () => {
                 className="flex items-center gap-1.5 font-medium hover:text-brand transition-colors group"
               >
                 <TbMapPin className="w-3.5 h-3.5 text-brand" />
-                <span>Shahar:</span>
+                <span>{t("city")}:</span>
                 <span className="font-bold text-gray-900 group-hover:text-brand">
                   {selectedLocation.shortName}
                 </span>
@@ -76,7 +78,7 @@ const Navbar = () => {
 
               <div className="hidden sm:flex items-center gap-1 text-gray-500">
                 <TbTruck className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Buyurtmangizni 1 kunda bepul yetkazib beramiz!</span>
+                <span>{t("deliveryNotice")}</span>
               </div>
             </div>
 
@@ -84,23 +86,15 @@ const Navbar = () => {
             <div className="flex items-center gap-5">
               <a
                 href="#faq"
-                className="hidden md:flex items-center gap-1 hover:text-brand transition-colors"
+                onClick={handleFaqClick}
+                className="hidden md:flex items-center gap-1 hover:text-brand transition-colors cursor-pointer font-medium"
               >
                 <TbHelpCircle className="w-3.5 h-3.5" />
-                <span>Savol-javoblar</span>
+                <span>{t("faq")}</span>
               </a>
 
-              <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-md px-1.5 py-0.5">
-                <select
-                  onChange={(e) => changeLang(e.target.value)}
-                  value={i18n.language}
-                  className="bg-transparent font-semibold text-gray-800 outline-none cursor-pointer text-xs"
-                >
-                  <option value="uz">O'zbekcha</option>
-                  <option value="ru">Русский</option>
-                  <option value="en">English</option>
-                </select>
-              </div>
+              {/* Beautiful Custom Language Selector */}
+              <LanguageSelector />
             </div>
           </div>
         </div>
@@ -120,10 +114,10 @@ const Navbar = () => {
           {/* Catalog Button */}
           <button
             onClick={() => setIsCatalogOpen(true)}
-            className="flex items-center gap-2 bg-purple-50 hover:bg-purple-100 text-brand font-bold px-4 py-2.5 rounded-xl border border-purple-200/60 transition-all flex-shrink-0 active:scale-95"
+            className="flex items-center gap-2 bg-purple-50 hover:bg-purple-100 text-brand font-bold px-4 py-2.5 rounded-xl border border-purple-200/60 transition-all flex-shrink-0 active:scale-95 cursor-pointer"
           >
             <TbGridDots className="w-5 h-5 stroke-[2.5]" />
-            <span className="hidden sm:inline">Katalog</span>
+            <span className="hidden sm:inline">{t("catalog")}</span>
           </button>
 
           {/* Search Bar */}
@@ -133,7 +127,7 @@ const Navbar = () => {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Mahsulotlar va turkumlar bo'yicha qidiruv..."
+                placeholder={t("searchPlaceholder")}
                 className="w-full px-4 py-2 text-sm text-gray-800 outline-none placeholder:text-gray-400"
               />
               <button
@@ -151,7 +145,7 @@ const Navbar = () => {
             <Link
               to="/wishlist"
               className="p-2.5 sm:px-3 text-gray-700 hover:text-brand hover:bg-purple-50 rounded-xl flex items-center gap-1.5 transition-all relative group"
-              title="Saralanganlar"
+              title={t("favorites")}
             >
               <div className="relative">
                 <TbHeart className="w-6 h-6 stroke-[1.8] group-hover:scale-110 transition-transform" />
@@ -161,14 +155,14 @@ const Navbar = () => {
                   </span>
                 )}
               </div>
-              <span className="hidden lg:inline text-xs font-semibold">Saralanganlar</span>
+              <span className="hidden lg:inline text-xs font-semibold">{t("favorites")}</span>
             </Link>
 
             {/* Cart Button */}
             <button
               onClick={openDrawer}
-              className="p-2.5 sm:px-3 text-gray-700 hover:text-brand hover:bg-purple-50 rounded-xl flex items-center gap-1.5 transition-all relative group"
-              title="Savat"
+              className="p-2.5 sm:px-3 text-gray-700 hover:text-brand hover:bg-purple-50 rounded-xl flex items-center gap-1.5 transition-all relative group cursor-pointer"
+              title={t("cart")}
             >
               <div className="relative">
                 <TbShoppingBag className="w-6 h-6 stroke-[1.8] group-hover:scale-110 transition-transform" />
@@ -178,7 +172,7 @@ const Navbar = () => {
                   </span>
                 )}
               </div>
-              <span className="hidden lg:inline text-xs font-semibold">Savat</span>
+              <span className="hidden lg:inline text-xs font-semibold">{t("cart")}</span>
             </button>
 
             {/* Auth / Account */}
@@ -195,14 +189,14 @@ const Navbar = () => {
                       to="/profile"
                       className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-purple-50 hover:text-brand rounded-xl"
                     >
-                      <TbUser className="w-4 h-4" /> Profilim
+                      <TbUser className="w-4 h-4" /> {t("myProfile")}
                     </Link>
                     {user.role === "admin" && (
                       <Link
                         to="/admin"
                         className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-blue-600 hover:bg-blue-50 rounded-xl"
                       >
-                        Admin Paneli
+                        {t("adminPanel")}
                       </Link>
                     )}
                     {user.role === "seller" && (
@@ -210,14 +204,14 @@ const Navbar = () => {
                         to="/seller"
                         className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-emerald-600 hover:bg-emerald-50 rounded-xl"
                       >
-                        Sotuvchi Paneli
+                        {t("sellerPanel")}
                       </Link>
                     )}
                     <button
                       onClick={logout}
                       className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-red-500 hover:bg-red-50 rounded-xl"
                     >
-                      <TbLogout className="w-4 h-4" /> Chiqish
+                      <TbLogout className="w-4 h-4" /> {t("logout")}
                     </button>
                   </div>
                 </div>
@@ -228,13 +222,13 @@ const Navbar = () => {
                 className="bg-brand hover:bg-brand-dark text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-md shadow-brand/20 transition-all flex items-center gap-1.5 active:scale-95"
               >
                 <TbUser className="w-4 h-4" />
-                <span>Kirish</span>
+                <span>{t("login")}</span>
               </Link>
             )}
           </div>
         </div>
 
-        {/* Subheader Category Pill Nav (SVG Icons ONLY!) */}
+        {/* Subheader Category Pill Nav */}
         <div className="border-t border-gray-100 bg-white">
           <div className="container mx-auto px-4 overflow-x-auto scrollbar-none">
             <div className="flex items-center gap-6 py-2.5 text-xs font-semibold text-gray-600 whitespace-nowrap">
@@ -247,7 +241,7 @@ const Navbar = () => {
                     className="flex items-center gap-1.5 hover:text-brand transition-colors group py-1"
                   >
                     <Icon className="w-4 h-4 text-gray-400 group-hover:text-brand transition-colors" />
-                    <span>{item.label}</span>
+                    <span>{t(item.key)}</span>
                   </Link>
                 );
               })}
