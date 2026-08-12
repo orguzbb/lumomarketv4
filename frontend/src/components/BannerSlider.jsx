@@ -5,15 +5,15 @@ import api from "../api/axios";
 const DEFAULT_SLIDES = [
   {
     _id: "1",
-    title: "Brend mahsulotlariga",
-    highlight: "-15% chegirma",
-    subtitle: "Amerikada ishlab chiqarilgan vitaminlar va qo'shimchalar",
-    tag: "us AQShda ishlab chiqarilgan",
+    title: "Katta mavsumiy chegirmalar",
+    highlight: "-30% gacha arzon",
+    subtitle: "Kiyim-kechak, elektronika va barcha turdagi sifatli mahsulotlar",
+    tag: "Super Aksiya",
     bgGradient: "from-[#FBF3E8] via-[#F9EBD8] to-[#F5DEC0]",
     textColor: "text-[#1E293B]",
     tagBg: "bg-white text-slate-800",
     buttonBg: "bg-[#7000FF] hover:bg-[#5B00D6] text-white",
-    image: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=800&q=80"
+    image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=800&q=80"
   },
   {
     _id: "2",

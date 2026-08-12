@@ -9,6 +9,7 @@ import Unauthorized from "./pages/errors/Unauthorized";
 import Forbidden from "./pages/errors/Forbidden";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import Profile from "./pages/Profile";
+import Checkout from "./pages/Checkout";
 import AdminDashboard from "./pages/admin/Dashboard";
 import SellerDashboard from "./pages/seller/Dashboard";
 
@@ -18,6 +19,7 @@ function App() {
       <Route path="/" element={<MainLayout />}>
         <Route index element={<Home />} />
         <Route path="category/:categoryId" element={<CategoryProducts />} />
+        <Route path="checkout" element={<Checkout />} />
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
         <Route element={<ProtectedRoute />}>

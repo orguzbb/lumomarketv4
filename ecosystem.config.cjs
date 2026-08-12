@@ -1,8 +1,8 @@
 module.exports = {
   apps: [
     {
-      name: 'lumo-market-v3-api',
-      cwd: '/var/www/lumo-market-v3/backend',
+      name: 'lumomarketv4',
+      cwd: './backend',
       script: 'src/server.js',
       instances: 1,
       exec_mode: 'fork',

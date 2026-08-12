@@ -26,8 +26,7 @@ export const CATEGORIES_WITH_SVGS = [
   { id: "sports", name: "Sport va hordiq", icon: TbBallFootball, count: "4,600+ mahsulot", popular: false },
   { id: "auto", name: "Avtotovarlar", icon: TbCar, count: "6,200+ mahsulot", popular: false },
   { id: "kids", name: "Bolalar tovarlari", icon: TbBabyCarriage, count: "9,500+ mahsulot", popular: false },
-  { id: "books", name: "Kitoblar va kantselyariya", icon: TbBook, count: "11,000+ mahsulot", popular: false },
-  { id: "health", name: "Salomatlik va dori-darmon", icon: TbHeart, count: "3,900+ mahsulot", popular: false }
+  { id: "books", name: "Kitoblar va kantselyariya", icon: TbBook, count: "11,000+ mahsulot", popular: false }
 ];
 
 const CatalogModal = ({ isOpen, onClose }) => {

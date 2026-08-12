@@ -35,8 +35,7 @@ const CATEGORY_NAV_ITEMS = [
   { id: "home", label: "Uy-ro'zg'or buyumlari", icon: TbHome },
   { id: "accessories", label: "Aksessuarlar", icon: TbClock },
   { id: "sports", label: "Sport va hordiq", icon: TbBallFootball },
-  { id: "auto", label: "Avtotovarlar", icon: TbCar },
-  { id: "health", label: "Salomatlik", icon: TbHeart }
+  { id: "auto", label: "Avtotovarlar", icon: TbCar }
 ];
 
 const Navbar = () => {

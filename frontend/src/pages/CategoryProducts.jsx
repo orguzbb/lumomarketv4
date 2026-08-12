@@ -23,20 +23,19 @@ const CATEGORY_NAMES = {
   sports: "Sport va hordiq",
   auto: "Avtotovarlar",
   kids: "Bolalar tovarlari",
-  books: "Kitoblar va kantselyariya",
-  health: "Salomatlik va dori-darmon"
+  books: "Kitoblar va kantselyariya"
 };
 
 const DEMO_PRODUCTS = [
   {
     _id: "demo-1",
-    name: "AQSh Vitamin D3 + K2 Premium Complex (120 kapsula)",
-    price: 185000,
-    oldPrice: 240000,
-    image: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=600&q=80",
+    name: "Apple AirPods Pro 2 Simsiz quloqchinlar MagSafe kassa bilan",
+    price: 2850000,
+    oldPrice: 3400000,
+    image: "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?auto=format&fit=crop&w=600&q=80",
     rating: 4.9,
     reviewsCount: 342,
-    category: "beauty"
+    category: "electronics"
   },
   {
     _id: "demo-2",
