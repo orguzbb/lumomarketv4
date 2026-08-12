@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 const orderSchema = new mongoose.Schema(
   {
-    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: false },
     items: [
       {
         product: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
@@ -17,8 +17,14 @@ const orderSchema = new mongoose.Schema(
       phone: String,
       city: String,
       address: String,
+      street: String,
+      comment: String,
     },
-    paymentMethod: { type: String, enum: ["cod", "card"], default: "cod" },
+    paymentMethod: {
+      type: String,
+      enum: ["cod", "card", "cash", "uzcard", "click", "payme"],
+      default: "cash",
+    },
     paymentStatus: {
       type: String,
       enum: ["pending", "paid", "failed"],

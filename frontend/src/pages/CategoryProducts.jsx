@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import api from "../api/axios";
 import { useCart } from "../context/CartContext";
+import { useWishlist } from "../context/WishlistContext";
 import ProductQuickViewModal from "../components/ProductQuickViewModal";
 import {
   TbChevronRight,
@@ -112,6 +113,7 @@ const DEMO_PRODUCTS = [
 const CategoryProducts = () => {
   const { categoryId } = useParams();
   const { addToCart } = useCart();
+  const { toggleWishlist, isInWishlist } = useWishlist();
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -213,10 +215,18 @@ const CategoryProducts = () => {
                     </span>
                   )}
                   <button
-                    className="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/80 backdrop-blur-md flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors shadow-sm"
-                    title="Saralanganlarga qo'shish"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleWishlist(p);
+                    }}
+                    className={`absolute top-2 right-2 w-8 h-8 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center transition-all shadow-sm ${
+                      isInWishlist(p._id || p.id)
+                        ? "text-red-500 bg-red-50"
+                        : "text-gray-400 hover:text-red-500"
+                    }`}
+                    title="Saralanganlarga saqlash"
                   >
-                    <TbHeart className="w-4 h-4" />
+                    <TbHeart className={`w-4 h-4 ${isInWishlist(p._id || p.id) ? "fill-red-500 text-red-500" : ""}`} />
                   </button>
                 </div>
 

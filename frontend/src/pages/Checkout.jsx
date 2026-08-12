@@ -15,7 +15,8 @@ import {
   TbPhone,
   TbCash,
   TbShieldCheck,
-  TbBuildingStore
+  TbBuildingStore,
+  TbPrinter
 } from "react-icons/tb";
 
 const Checkout = () => {
@@ -57,15 +58,27 @@ const Checkout = () => {
     }
 
     setLoading(true);
+
+    const cartItemsSnapshot = cart.items.map((i) => ({
+      product: i.product?._id || i.product,
+      name: i.name || i.product?.name || "Mahsulot",
+      price: Number(i.price || i.product?.price || 0),
+      quantity: Number(i.quantity || 1),
+      image: i.image || i.product?.images?.[0]?.url || i.product?.image || "",
+      seller: i.product?.seller || null,
+    }));
+
     const orderData = {
       shippingAddress: {
+        address: formData.address,
         street: formData.address,
         city: formData.city,
         phone: formData.phone,
         fullname: formData.fullname,
-        comment: formData.comment
+        comment: formData.comment,
       },
-      paymentMethod: formData.paymentMethod
+      paymentMethod: formData.paymentMethod,
+      items: cartItemsSnapshot,
     };
 
     try {
@@ -74,16 +87,35 @@ const Checkout = () => {
         const res = await api.post("/orders", orderData);
         createdOrder = res.data;
       } catch (err) {
-        console.warn("Backend order submission error, fallback local success", err);
+        console.warn("Backend order submission error, using local order snapshot fallback", err);
         createdOrder = {
           _id: "ORD-" + Math.floor(100000 + Math.random() * 900000),
+          invoiceNumber: "INV-" + Date.now() + "-" + Math.floor(100 + Math.random() * 900),
+          items: cartItemsSnapshot,
+          shippingAddress: orderData.shippingAddress,
+          paymentMethod: formData.paymentMethod,
+          subtotal: subtotal,
+          shippingFee: deliveryFee,
           total: grandTotal,
-          createdAt: new Date().toISOString()
+          createdAt: new Date().toISOString(),
         };
       }
 
+      // Snapshot order before clearing cart
+      const orderSnapshot = {
+        _id: createdOrder._id || "ORD-" + Math.floor(100000 + Math.random() * 900000),
+        invoiceNumber: createdOrder.invoiceNumber || ("INV-" + Date.now()),
+        items: createdOrder.items && createdOrder.items.length > 0 ? createdOrder.items : cartItemsSnapshot,
+        shippingAddress: createdOrder.shippingAddress || orderData.shippingAddress,
+        paymentMethod: createdOrder.paymentMethod || formData.paymentMethod,
+        subtotal: createdOrder.subtotal !== undefined ? createdOrder.subtotal : subtotal,
+        shippingFee: createdOrder.shippingFee !== undefined ? createdOrder.shippingFee : deliveryFee,
+        total: createdOrder.total || grandTotal,
+        createdAt: createdOrder.createdAt || new Date().toISOString(),
+      };
+
       await clearCart();
-      setOrderSuccess(createdOrder);
+      setOrderSuccess(orderSnapshot);
       toast.success("Buyurtma muvaffaqiyatli rasmiylashtirildi! 🎉");
     } catch (err) {
       toast.error("Buyurtma rasmiylashtirishda xatolik yuz berdi");
@@ -93,56 +125,151 @@ const Checkout = () => {
   };
 
   if (orderSuccess) {
+    const orderItems = orderSuccess.items || [];
+    const totalSum = orderSuccess.total || 0;
+    const subtotalSum = orderSuccess.subtotal || 0;
+    const feeSum = orderSuccess.shippingFee !== undefined ? orderSuccess.shippingFee : 0;
+    const invoiceNo = orderSuccess.invoiceNumber || orderSuccess._id || "INV-1001";
+    const dateFormatted = new Date(orderSuccess.createdAt || Date.now()).toLocaleString("uz-UZ", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
     return (
-      <div className="max-w-2xl mx-auto py-12 px-4 text-center animate-fade-in space-y-6">
-        <div className="w-20 h-20 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/20 animate-scale-up">
-          <TbCheck className="w-10 h-10 stroke-[3]" />
-        </div>
-        <div>
-          <span className="bg-purple-100 text-brand text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-            Buyurtma #{orderSuccess._id}
-          </span>
-          <h1 className="text-3xl font-black text-gray-900 mt-2">
-            Rahmat! Buyurtmangiz qabul qilindi!
+      <div className="max-w-2xl mx-auto py-8 px-4 animate-fade-in space-y-6">
+        <div className="text-center space-y-2">
+          <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/20 animate-scale-up">
+            <TbCheck className="w-8 h-8 stroke-[3]" />
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-black text-gray-900">
+            Rahmat! Buyurtmangiz qabul qilindi! 🎉
           </h1>
-          <p className="text-sm text-gray-600 mt-2 max-w-md mx-auto">
-            Tez orada kuryerimiz yoki operatorimiz siz bilan bog'lanadi va buyurtmani yetkazib beradi.
+          <p className="text-xs text-gray-500 max-w-md mx-auto">
+            Quyida rasmiy xarid cheki taqdim etilgan. Ushbu chekni saqlab qo'yishingiz yoki chop etishingiz mumkin.
           </p>
         </div>
 
-        <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-3 text-left">
-          <div className="flex justify-between text-xs text-gray-500">
-            <span>Buyurtma raqami:</span>
-            <span className="font-bold text-gray-900">{orderSuccess._id}</span>
+        {/* OFFICIAL CHEK / KVITANSIYA CARD */}
+        <div className="bg-white rounded-3xl border border-gray-200 shadow-xl overflow-hidden p-6 sm:p-8 space-y-6 font-sans">
+          {/* Chek Header */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-6 border-b border-dashed border-gray-300 gap-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-brand text-white font-black text-sm flex items-center justify-center">L</div>
+                <span className="text-xl font-black tracking-tight text-gray-900">lumo<span className="text-brand">market</span></span>
+              </div>
+              <p className="text-[11px] text-gray-500 mt-1">Lumo Market v4 Onlayn gipermarketi</p>
+            </div>
+
+            <div className="text-left sm:text-right">
+              <span className="text-xs font-black bg-purple-50 text-brand px-3 py-1 rounded-full uppercase tracking-wider">
+                Xarid Cheki
+              </span>
+              <p className="text-xs font-mono font-bold text-gray-900 mt-1.5">{invoiceNo}</p>
+              <p className="text-[10px] text-gray-400">{dateFormatted}</p>
+            </div>
           </div>
-          <div className="flex justify-between text-xs text-gray-500">
-            <span>To'lov usuli:</span>
-            <span className="font-bold text-gray-900 capitalize">{formData.paymentMethod}</span>
+
+          {/* Customer & Address Details */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs bg-gray-50 p-4 rounded-2xl">
+            <div>
+              <span className="text-gray-400 block text-[10px] uppercase font-bold">Mijoz:</span>
+              <span className="font-bold text-gray-900">{orderSuccess.shippingAddress?.fullname || formData.fullname}</span>
+              <span className="text-gray-600 block">{orderSuccess.shippingAddress?.phone || formData.phone}</span>
+            </div>
+            <div>
+              <span className="text-gray-400 block text-[10px] uppercase font-bold">Yetkazib berish manzili:</span>
+              <span className="font-bold text-gray-900">
+                {orderSuccess.shippingAddress?.city || formData.city}, {orderSuccess.shippingAddress?.address || formData.address}
+              </span>
+            </div>
           </div>
-          <div className="flex justify-between text-xs text-gray-500">
-            <span>Yetkazib berish manzili:</span>
-            <span className="font-bold text-gray-900">{formData.city}, {formData.address}</span>
+
+          {/* Items Table */}
+          <div>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-3">Buyurtma qilingan mahsulotlar:</h4>
+            <div className="border border-gray-200 rounded-2xl overflow-hidden">
+              <table className="w-full text-xs text-left">
+                <thead className="bg-gray-100/70 border-b border-gray-200 text-gray-600 font-bold uppercase text-[10px]">
+                  <tr>
+                    <th className="p-3">#</th>
+                    <th className="p-3">Mahsulot nomi</th>
+                    <th className="p-3 text-center">Soni</th>
+                    <th className="p-3 text-right">Narxi</th>
+                    <th className="p-3 text-right">Jami</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 bg-white">
+                  {orderItems.map((it, idx) => {
+                    const itemName = it.name || it.product?.name || "Mahsulot";
+                    const itemPrice = Number(it.price || it.product?.price || 0);
+                    const itemQty = Number(it.quantity || 1);
+                    const lineTotal = itemPrice * itemQty;
+                    return (
+                      <tr key={idx} className="hover:bg-purple-50/20">
+                        <td className="p-3 text-gray-400">{idx + 1}</td>
+                        <td className="p-3 font-bold text-gray-900">{itemName}</td>
+                        <td className="p-3 text-center font-bold text-gray-700">{itemQty}</td>
+                        <td className="p-3 text-right text-gray-600">{itemPrice.toLocaleString()} so'm</td>
+                        <td className="p-3 text-right font-black text-gray-900">{lineTotal.toLocaleString()} so'm</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
-          <div className="border-t border-gray-100 pt-3 flex justify-between text-base font-bold text-gray-900">
-            <span>Jami to'lov:</span>
-            <span className="text-brand font-black">{grandTotal.toLocaleString()} so'm</span>
+
+          {/* Totals & Payment Summary */}
+          <div className="border-t border-dashed border-gray-300 pt-4 space-y-2 text-xs">
+            <div className="flex justify-between text-gray-600">
+              <span>Mahsulotlar jami summasi:</span>
+              <span className="font-bold text-gray-900">{subtotalSum.toLocaleString()} so'm</span>
+            </div>
+            <div className="flex justify-between text-gray-600">
+              <span>Yetkazib berish xizmati:</span>
+              <span className="font-bold text-emerald-600">
+                {feeSum === 0 ? "Bepul" : `${feeSum.toLocaleString()} so'm`}
+              </span>
+            </div>
+            <div className="flex justify-between text-gray-600">
+              <span>To'lov usuli:</span>
+              <span className="font-bold text-gray-900 uppercase bg-gray-100 px-2 py-0.5 rounded">
+                {orderSuccess.paymentMethod || formData.paymentMethod}
+              </span>
+            </div>
+            <div className="border-t border-gray-200 pt-3 flex justify-between items-baseline text-base">
+              <span className="font-black text-gray-900">JAMI TO'LANGAN SUMMA:</span>
+              <span className="text-2xl font-black text-brand">{totalSum.toLocaleString()} so'm</span>
+            </div>
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+          <button
+            onClick={() => window.print()}
+            className="w-full sm:w-auto bg-gray-900 hover:bg-black text-white font-bold px-6 py-3.5 rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 text-xs"
+          >
+            <TbPrinter className="w-4 h-4" />
+            <span>Chekni chop etish (Print)</span>
+          </button>
           <Link
             to="/"
-            className="w-full sm:w-auto bg-brand hover:bg-brand-dark text-white font-bold px-8 py-3.5 rounded-2xl shadow-lg shadow-brand/20 transition-all flex items-center justify-center gap-2"
+            className="w-full sm:w-auto bg-brand hover:bg-brand-dark text-white font-bold px-8 py-3.5 rounded-2xl shadow-lg shadow-brand/20 transition-all flex items-center justify-center gap-2 text-xs"
           >
-            <TbShoppingBag className="w-5 h-5" />
+            <TbShoppingBag className="w-4 h-4" />
             <span>Xaridni davom ettirish</span>
           </Link>
           {user && (
             <Link
               to="/profile"
-              className="w-full sm:w-auto bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold px-6 py-3.5 rounded-2xl transition-all flex items-center justify-center gap-2"
+              className="w-full sm:w-auto bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold px-6 py-3.5 rounded-2xl transition-all flex items-center justify-center gap-2 text-xs"
             >
-              <TbUser className="w-5 h-5 text-brand" />
+              <TbUser className="w-4 h-4 text-brand" />
               <span>Profilga o'tish</span>
             </Link>
           )}

@@ -33,6 +33,9 @@ const AdminDashboard = () => {
   // Registered Users list
   const [usersList, setUsersList] = useState([]);
 
+  // Admin Orders list
+  const [ordersList, setOrdersList] = useState([]);
+
   // Categories list
   const [categories, setCategories] = useState([]);
 
@@ -83,6 +86,7 @@ const AdminDashboard = () => {
     fetchSettings();
     fetchCategories();
     fetchUsers();
+    fetchOrders();
   }, []);
 
   const fetchStats = async () => {
@@ -91,6 +95,26 @@ const AdminDashboard = () => {
       if (data) setStats(data);
     } catch (e) {
       console.warn("Fetch stats error", e);
+    }
+  };
+
+  const fetchOrders = async () => {
+    try {
+      const { data } = await api.get("/admin/orders");
+      if (data && Array.isArray(data)) setOrdersList(data);
+    } catch (e) {
+      console.warn("Fetch orders error", e);
+    }
+  };
+
+  const handleUpdateOrderStatus = async (orderId, status) => {
+    try {
+      await api.patch(`/orders/${orderId}/status`, { status });
+      toast.success("Buyurtma holati yangilandi!");
+      fetchOrders();
+      fetchStats();
+    } catch (e) {
+      toast.error("Buyurtma holatini yangilashda xatolik");
     }
   };
 
@@ -296,6 +320,15 @@ const AdminDashboard = () => {
           >
             <TbPackage className="w-4 h-4" />
             <span>Mahsulotlar CRUD</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("orders")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+              activeTab === "orders" ? "bg-white text-brand shadow-sm" : "text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            <TbShoppingBag className="w-4 h-4" />
+            <span>Buyurtmalar ({ordersList.length || stats.orders || 0})</span>
           </button>
           <button
             onClick={() => setActiveTab("banners")}
@@ -553,6 +586,113 @@ const AdminDashboard = () => {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* TAB 5: ORDERS MANAGEMENT */}
+      {activeTab === "orders" && (
+        <div className="space-y-4 animate-fade-in">
+          <div className="flex items-center justify-between bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+            <div>
+              <h3 className="text-sm font-bold text-gray-900">Buyurtmalar Boshqaruvi</h3>
+              <p className="text-xs text-gray-500">Mijozlar tomonidan rasmiylashtirilgan barcha real buyurtmalar</p>
+            </div>
+            <span className="text-xs bg-purple-50 text-brand font-bold px-3 py-1 rounded-xl">
+              Jami: {ordersList.length} ta
+            </span>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs text-gray-700">
+                <thead className="bg-gray-50 border-b border-gray-100 text-gray-500 font-bold uppercase">
+                  <tr>
+                    <th className="p-4">Chek / Invoice ID</th>
+                    <th className="p-4">Mijoz & Manzil</th>
+                    <th className="p-4">Mahsulotlar</th>
+                    <th className="p-4">To'lov & Summa</th>
+                    <th className="p-4">Holati (Status)</th>
+                    <th className="p-4">Sana</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 bg-white">
+                  {ordersList.length > 0 ? (
+                    ordersList.map((ord) => {
+                      const invoiceNo = ord.invoiceNumber || ord._id;
+                      const customerName = ord.shippingAddress?.fullname || ord.user?.fullname || "Mehmon";
+                      const customerPhone = ord.shippingAddress?.phone || ord.user?.phone || "-";
+                      const addressStr = `${ord.shippingAddress?.city || ''}, ${ord.shippingAddress?.address || ''}`;
+                      const totalSum = ord.total || 0;
+                      const status = ord.orderStatus || "pending";
+
+                      return (
+                        <tr key={ord._id} className="hover:bg-purple-50/20 transition-colors">
+                          <td className="p-4">
+                            <span className="font-mono font-bold text-gray-900 block">{invoiceNo}</span>
+                            <span className="text-[10px] text-gray-400">#{ord._id}</span>
+                          </td>
+                          <td className="p-4">
+                            <p className="font-bold text-gray-900">{customerName}</p>
+                            <p className="text-gray-500 text-[11px]">{customerPhone}</p>
+                            <p className="text-gray-400 text-[10px] truncate max-w-[180px]">{addressStr}</p>
+                          </td>
+                          <td className="p-4">
+                            <div className="space-y-1 max-w-xs">
+                              {ord.items?.map((it, idx) => (
+                                <p key={idx} className="text-gray-800 text-[11px] truncate">
+                                  <span className="font-bold text-brand">{it.quantity}x</span> {it.name || it.product?.name || "Mahsulot"} ({Number(it.price || 0).toLocaleString()} so'm)
+                                </p>
+                              ))}
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            <span className="font-black text-brand text-sm block">{totalSum.toLocaleString()} so'm</span>
+                            <span className="text-[10px] uppercase font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded inline-block mt-1">
+                              {ord.paymentMethod || "cash"}
+                            </span>
+                          </td>
+                          <td className="p-4">
+                            <select
+                              value={status}
+                              onChange={(e) => handleUpdateOrderStatus(ord._id, e.target.value)}
+                              className={`text-xs font-bold px-3 py-1.5 rounded-xl border outline-none cursor-pointer ${
+                                status === "delivered" ? "bg-emerald-50 text-emerald-600 border-emerald-200" :
+                                status === "cancelled" ? "bg-red-50 text-red-600 border-red-200" :
+                                status === "shipping" ? "bg-blue-50 text-blue-600 border-blue-200" :
+                                "bg-amber-50 text-amber-600 border-amber-200"
+                              }`}
+                            >
+                              <option value="pending">Kutilmoqda (Pending)</option>
+                              <option value="confirmed">Tasdiqlandi (Confirmed)</option>
+                              <option value="processing">Jarayonda (Processing)</option>
+                              <option value="shipping">Yetkazilmoqda (Shipping)</option>
+                              <option value="delivered">Yetkazib berildi (Delivered)</option>
+                              <option value="cancelled">Bekor qilindi (Cancelled)</option>
+                            </select>
+                          </td>
+                          <td className="p-4 text-gray-400 text-[11px]">
+                            {ord.createdAt ? new Date(ord.createdAt).toLocaleString("uz-UZ", {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            }) : "-"}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td colSpan="6" className="p-8 text-center text-gray-400 font-medium">
+                        Hali buyurtmalar rasmiylashtirilmagan
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}

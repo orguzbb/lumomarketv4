@@ -8,6 +8,7 @@ import App from "./App.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { LocationProvider } from "./context/LocationContext.jsx";
 import { CartProvider } from "./context/CartContext.jsx";
+import { WishlistProvider } from "./context/WishlistContext.jsx";
 import "./i18n";
 import "./styles.css";
 
@@ -23,8 +24,10 @@ ReactDOM.createRoot(document.getElementById("root")).render(
           <AuthProvider>
             <LocationProvider>
               <CartProvider>
-                <App />
-                <Toaster position="top-right" />
+                <WishlistProvider>
+                  <App />
+                  <Toaster position="top-right" />
+                </WishlistProvider>
               </CartProvider>
             </LocationProvider>
           </AuthProvider>

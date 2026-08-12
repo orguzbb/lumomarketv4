@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { useCart } from "../context/CartContext";
+import { useWishlist } from "../context/WishlistContext";
 import { TbX, TbStar, TbShoppingBag, TbHeart, TbCheck, TbTruck, TbShieldCheck } from "react-icons/tb";
 
 const ProductQuickViewModal = ({ product, onClose }) => {
   const { addToCart } = useCart();
+  const { toggleWishlist, isInWishlist } = useWishlist();
   const [quantity, setQuantity] = useState(1);
-  const [isWishlisted, setIsWishlisted] = useState(false);
 
   if (!product) return null;
 
@@ -119,12 +120,15 @@ const ProductQuickViewModal = ({ product, onClose }) => {
               </div>
 
               <button
-                onClick={() => setIsWishlisted(!isWishlisted)}
+                onClick={() => toggleWishlist(product)}
                 className={`w-10 h-10 rounded-xl border flex items-center justify-center transition-colors ${
-                  isWishlisted ? "bg-red-50 border-red-200 text-red-500" : "border-gray-200 text-gray-400 hover:text-red-500"
+                  isInWishlist(product._id || product.id)
+                    ? "bg-red-50 border-red-200 text-red-500"
+                    : "border-gray-200 text-gray-400 hover:text-red-500"
                 }`}
+                title="Saralanganlarga saqlash"
               >
-                <TbHeart className={`w-5 h-5 ${isWishlisted ? "fill-red-500" : ""}`} />
+                <TbHeart className={`w-5 h-5 ${isInWishlist(product._id || product.id) ? "fill-red-500 text-red-500" : ""}`} />
               </button>
             </div>
 

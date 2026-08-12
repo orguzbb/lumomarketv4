@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import BannerSlider from "../components/BannerSlider";
 import ProductQuickViewModal from "../components/ProductQuickViewModal";
 import { useCart } from "../context/CartContext";
+import { useWishlist } from "../context/WishlistContext";
 import api from "../api/axios";
 import {
   TbShirt,
@@ -119,6 +120,7 @@ const DEMO_PRODUCTS = [
 
 const Home = () => {
   const { addToCart } = useCart();
+  const { toggleWishlist, isInWishlist } = useWishlist();
   const [products, setProducts] = useState(DEMO_PRODUCTS);
   const [selectedQuickView, setSelectedQuickView] = useState(null);
 
@@ -299,10 +301,18 @@ const Home = () => {
                     </span>
                   )}
                   <button
-                    className="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/80 backdrop-blur-md flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors shadow-sm"
-                    title="Saralanganlarga qo'shish"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleWishlist(p);
+                    }}
+                    className={`absolute top-2 right-2 w-8 h-8 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center transition-all shadow-sm ${
+                      isInWishlist(p._id || p.id)
+                        ? "text-red-500 bg-red-50"
+                        : "text-gray-400 hover:text-red-500"
+                    }`}
+                    title="Saralanganlarga saqlash"
                   >
-                    <TbHeart className="w-4 h-4" />
+                    <TbHeart className={`w-4 h-4 ${isInWishlist(p._id || p.id) ? "fill-red-500 text-red-500" : ""}`} />
                   </button>
                 </div>
 

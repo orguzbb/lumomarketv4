@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { useLocation } from "../context/LocationContext";
 import { useCart } from "../context/CartContext";
+import { useWishlist } from "../context/WishlistContext";
 import { useTranslation } from "react-i18next";
 import CatalogModal from "./CatalogModal";
 import {
@@ -42,6 +43,7 @@ const Navbar = () => {
   const { user, logout } = useContext(AuthContext);
   const { selectedLocation, openModal: openRegionModal } = useLocation();
   const { totalCount, openDrawer } = useCart();
+  const { wishlistCount } = useWishlist();
   const { i18n } = useTranslation();
 
   const [isCatalogOpen, setIsCatalogOpen] = useState(false);
@@ -151,7 +153,14 @@ const Navbar = () => {
               className="p-2.5 sm:px-3 text-gray-700 hover:text-brand hover:bg-purple-50 rounded-xl flex items-center gap-1.5 transition-all relative group"
               title="Saralanganlar"
             >
-              <TbHeart className="w-6 h-6 stroke-[1.8] group-hover:scale-110 transition-transform" />
+              <div className="relative">
+                <TbHeart className="w-6 h-6 stroke-[1.8] group-hover:scale-110 transition-transform" />
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center border-2 border-white animate-scale-up">
+                    {wishlistCount}
+                  </span>
+                )}
+              </div>
               <span className="hidden lg:inline text-xs font-semibold">Saralanganlar</span>
             </Link>
 
