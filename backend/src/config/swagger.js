@@ -23,6 +23,10 @@ Bu API Lumo Marketplace platformasi uchun to'liq REST API va Swagger hujjatlarid
       description: 'Asosiy API serveri (/api)'
     },
     {
+      url: 'https://uzum.maktab16.uz/api',
+      description: 'Production server (uzum.maktab16.uz)'
+    },
+    {
       url: 'http://localhost:5000/api',
       description: 'Localhost server'
     }
