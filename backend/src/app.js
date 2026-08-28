@@ -54,11 +54,15 @@ app.use(cookieParser(process.env.COOKIE_SECRET));
 if (process.env.NODE_ENV === 'development') app.use(morgan('dev'));
 
 // Swagger Documentation UI & JSON Endpoints
-app.get(['/api-docs.json', '/api/api-docs.json', '/api/docs.json'], (req, res) => {
+app.get(['/api-docs.json', '/api/api-docs.json', '/api/docs.json', '/docs.json'], (req, res) => {
   res.setHeader('Content-Type', 'application/json');
-  res.send(swaggerSpec);
+  res.json(swaggerSpec);
 });
-app.use(['/api/api-docs', '/api/docs', '/api/swagger'], swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerUiOptions));
+const swaggerUiHandler = swaggerUi.setup(swaggerSpec, swaggerUiOptions);
+app.use('/api/api-docs', swaggerUi.serve, swaggerUiHandler);
+app.use('/api/docs', swaggerUi.serve, swaggerUiHandler);
+app.use('/api-docs', swaggerUi.serve, swaggerUiHandler);
+app.use('/docs', swaggerUi.serve, swaggerUiHandler);
 
 const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 1000 });
 app.use('/api', limiter);

@@ -1663,7 +1663,6 @@ Bu API Lumo Marketplace platformasi uchun to'liq REST API va Swagger hujjatlarid
 export const swaggerUiOptions = {
   customCss: `
     .swagger-ui .topbar { background-color: #1e293b; padding: 10px 0; }
-    .swagger-ui .topbar .topbar-wrapper img { content: url('https://raw.githubusercontent.com/swagger-api/swagger-ui/master/dist/favicon-32x32.png'); }
     .swagger-ui .info { margin: 20px 0; }
     .swagger-ui .info .title { color: #0f172a; font-weight: 700; font-family: system-ui, sans-serif; }
     .swagger-ui .btn.authorize { background-color: #6366f1; color: white; border-color: #6366f1; }
@@ -1673,6 +1672,11 @@ export const swaggerUiOptions = {
     .swagger-ui .opblock.opblock-put { border-color: #f59e0b; background: rgba(245, 158, 11, 0.05); }
     .swagger-ui .opblock.opblock-delete { border-color: #ef4444; background: rgba(239, 68, 68, 0.05); }
   `,
+  customCssUrl: 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.0/swagger-ui.min.css',
+  customJs: [
+    'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.0/swagger-ui-bundle.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.0/swagger-ui-standalone-preset.js'
+  ],
   customSiteTitle: 'Lumo Marketplace API - Swagger Documentation',
   swaggerOptions: {
     persistAuthorization: true,
@@ -1681,3 +1685,4 @@ export const swaggerUiOptions = {
     filter: true
   }
 };
+
