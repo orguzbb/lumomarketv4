@@ -24,4 +24,10 @@ yarn-error.log*
 .DS_Store
 Thumbs.db
 
-# NOTE: .env files included per explicit user instruction
+# env files
+.env
+.env.local
+.env.*.local
+*.env
+**/.env
+**/.env.local

@@ -6,6 +6,8 @@ import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec, swaggerUiOptions } from './config/swagger.js';
 import authRoutes from './routes/authRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
@@ -26,6 +28,7 @@ app.set('trust proxy', 1);
 
 app.use(
   helmet({
+    contentSecurityPolicy: false,
     crossOriginResourcePolicy: { policy: "cross-origin" },
     crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" }
   })
@@ -50,7 +53,15 @@ app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(cookieParser(process.env.COOKIE_SECRET));
 if (process.env.NODE_ENV === 'development') app.use(morgan('dev'));
 
-const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100 });
+// Swagger Documentation UI & JSON Endpoints
+app.get('/api-docs.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerSpec);
+});
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerUiOptions));
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerUiOptions));
+
+const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 1000 });
 app.use('/api', limiter);
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
