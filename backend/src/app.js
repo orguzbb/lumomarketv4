@@ -7,7 +7,7 @@ import rateLimit from 'express-rate-limit';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import swaggerUi from 'swagger-ui-express';
-import { swaggerSpec, swaggerUiOptions } from './config/swagger.js';
+import { swaggerSpec, renderSwaggerHTML } from './config/swagger.js';
 import authRoutes from './routes/authRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
@@ -58,11 +58,7 @@ app.get(['/api-docs.json', '/api/api-docs.json', '/api/docs.json', '/docs.json']
   res.setHeader('Content-Type', 'application/json');
   res.json(swaggerSpec);
 });
-const swaggerUiHandler = swaggerUi.setup(swaggerSpec, swaggerUiOptions);
-app.use('/api/api-docs', swaggerUi.serve, swaggerUiHandler);
-app.use('/api/docs', swaggerUi.serve, swaggerUiHandler);
-app.use('/api-docs', swaggerUi.serve, swaggerUiHandler);
-app.use('/docs', swaggerUi.serve, swaggerUiHandler);
+app.get(['/api/api-docs', '/api/docs', '/api-docs', '/docs', '/api/swagger'], renderSwaggerHTML);
 
 const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 1000 });
 app.use('/api', limiter);
