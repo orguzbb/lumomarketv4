@@ -58,7 +58,7 @@ app.get(['/api-docs.json', '/api/api-docs.json', '/api/docs.json'], (req, res) =
   res.setHeader('Content-Type', 'application/json');
   res.send(swaggerSpec);
 });
-app.use(['/api-docs', '/docs', '/api/api-docs', '/api/docs', '/api/swagger'], swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerUiOptions));
+app.use(['/api/api-docs', '/api/docs', '/api/swagger'], swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerUiOptions));
 
 const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 1000 });
 app.use('/api', limiter);
